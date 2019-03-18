@@ -1,6 +1,6 @@
 name       : nvidia-container-runtime
 version    : 2.0.0
-release    : 1
+release    : 2
 source     :
     - git|https://github.com/opencontainers/runc : 69663f0bd4b60df09991c08812a60108003fa340
     - https://github.com/NVIDIA/nvidia-container-runtime/archive/runtime-v2.0.0.tar.gz : 37ba41f324ed93f6a9909d4ce7af524f0f8272a68de4f023d52580d77601edf2
