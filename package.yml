@@ -1,36 +1,21 @@
 name       : nvidia-container-runtime
-version    : 2.0.0
-release    : 2
+version    : 3.4.0
+release    : 3
 source     :
-    - git|https://github.com/opencontainers/runc : 69663f0bd4b60df09991c08812a60108003fa340
-    - https://github.com/NVIDIA/nvidia-container-runtime/archive/runtime-v2.0.0.tar.gz : 37ba41f324ed93f6a9909d4ce7af524f0f8272a68de4f023d52580d77601edf2
-license    : BSD-3-Clause
+    - https://github.com/NVIDIA/nvidia-container-runtime/archive/v3.4.0.tar.gz : bc27c35717cf5c50fc17a7066e34dcd2dac2cb4165cc14b551d6ac20f15998c4
+license    : Apache-2.0
 component  : programming.tools
 summary    : NVIDIA container runtime
-description:
-    - A modified version of runc allowing users to run GPU enabled containers
+description: |
+    A thin wrapper around the native runc that allows users to run GPU enabled containers
 builddeps  :
-    - pkgconfig(libseccomp)
     - golang
 rundeps    :
-    - libnvidia-container
+    - nvidia-container-toolkit
 setup      : |
-    tar -zxvf $sources/runtime-v$version.tar.gz -C $workdir/..
-
-    mkdir -p src/github.com/opencontainers
-    ln -s $workdir src/github.com/opencontainers/runc
-
-    RUNC_COMMIT=69663f0bd4b60df09991c08812a60108003fa340 # For docker 18.06.1
-    %patch -p1 < $workdir/../$package-runtime-v$version/runtime/runc/$RUNC_COMMIT/*
+    %patch -p1 < $pkgfiles/support-stateless-configuration.patch
 build      : |
-    export GOPATH=$workdir
-    pushd src/github.com/opencontainers/runc
-    %make
-    popd
-
-    cp -r $workdir/../$package-runtime-v$version/hook/nvidia-container-runtime-hook $GOPATH/src/nvidia-container-runtime-hook
-    go get -ldflags "-s -w" -v nvidia-container-runtime-hook
+    ln -sv vendor src/src
+    %make -C src build GOPATH=$workdir/src
 install    : |
-    install -Dm00755 runc $installdir/usr/bin/nvidia-container-runtime
-    install -Dm00755 $workdir/bin/nvidia-container-runtime-hook $installdir/usr/bin/nvidia-container-runtime-hook
-    install -Dm00644 $workdir/../$package-runtime-v$version/hook/config.toml.centos $installdir/etc/nvidia-container-runtime/config.toml
+    install -Dm00755 src/nvidia-container-runtime $installdir/usr/bin/nvidia-container-runtime
